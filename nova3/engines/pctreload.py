@@ -1,4 +1,4 @@
-#VERSION: 1.1
+#VERSION: 1.11
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, retrieve_url, headers
@@ -19,6 +19,7 @@ class pctreload(object):
     url = 'https://pctreload.com'
     name = 'PCTReload'
     size = ""
+    count = 1
     
     class HTMLParser1(HTMLParser):
         indicador = 0
@@ -61,6 +62,7 @@ class pctreload(object):
 
         #print(item)
         prettyPrinter(item)
+        pctreload.count = pctreload.count + 1
         
     def get_torrent_core(self, link):
         html_virgen = retrieve_url(link)
@@ -68,7 +70,7 @@ class pctreload(object):
         html = html[:html.find("\";")]
         html = html[26:]
         if html == "":
-            parser = self.HTMLParser1()
+            parser = pctreload.HTMLParser1()
             parser.feed(html_virgen)
         else:
             pctreload.montar_torrent(self,html)
@@ -101,7 +103,8 @@ class pctreload(object):
                             
                             
             self.pg = self.pg + 1
+        print(pctreload.count)
 
 if __name__ == "__main__":
     m = pctreload()
-    m.search('bloodshot')
+    m.search('star wars')
