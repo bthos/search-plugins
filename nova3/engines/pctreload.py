@@ -1,7 +1,7 @@
-#VERSION: 1.11
+#VERSION: 1.16
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
-from helpers import download_file, retrieve_url, headers
+from helpers import download_file, headers
 from novaprinter import prettyPrinter
 import re
 import json
@@ -20,13 +20,13 @@ class pctreload(object):
     name = 'PCTReload'
     size = ""
     count = 1
+    list = [] 
     
     class HTMLParser1(HTMLParser):
         indicador = 0
         def handle_starttag(self, tag, attrs):
             if tag == 'a' and self.indicador == 1:
                 Dict = dict(attrs)
-                #print(Dict["href"])
                 pctreload.get_torrent2(self, Dict["href"])
                 self.indicador = 0
             elif tag == "span":
@@ -34,14 +34,29 @@ class pctreload(object):
                 if "class" in Dict and Dict["class"] == "color":
                     self.indicador = 1
 
+    def retrieve_url2(self, url):
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(req)
+            dat = response.read()
+            response.close()
+            return dat
+        except urllib.error.URLError as errno:
+            response.close()
+            return ""
+        return ""
+
     def do_post(self, full_url, what):
         query_args = {'s': what, 'pg': self.pg}
         encoded_args = urllib.parse.urlencode(query_args).encode('ascii')
         req = urllib.request.Request(full_url, data=encoded_args, headers=headers)
-        with urllib.request.urlopen(req) as response:
+        req2 = urllib.request.urlopen(req)
+        with req2 as response:
             the_page = response.read()
             self.pg = self.pg + 1
+            req2.close()
             return the_page
+        req2.close()
             
     def montar_torrent(self, link):
         num = -1
@@ -50,6 +65,7 @@ class pctreload(object):
             name = link.split("/")[num].split('.')[0]
         
         link = pctreload.url + link[link.find("/"):]
+        
         
         item = {}
         item['seeds'] = '-1'
@@ -65,13 +81,20 @@ class pctreload(object):
         pctreload.count = pctreload.count + 1
         
     def get_torrent_core(self, link):
-        html_virgen = retrieve_url(link)
-        html = html_virgen[html_virgen.find("window.location.href = \"//"):]
+        if link not in pctreload.list: 
+            pctreload.list.append(link) 
+        else:
+            return
+        
+        html_virgen = pctreload.retrieve_url2(self, link)
+        html_virgen = str(html_virgen)
+        idx = html_virgen.find("window.location.href = \"//")
+        html = html_virgen[idx:]
         html = html[:html.find("\";")]
         html = html[26:]
         if html == "":
             parser = pctreload.HTMLParser1()
-            parser.feed(html_virgen)
+            parser.feed(str(html_virgen))
         else:
             pctreload.montar_torrent(self,html)
         return
