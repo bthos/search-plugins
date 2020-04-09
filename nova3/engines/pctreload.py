@@ -1,4 +1,4 @@
-#VERSION: 1.16
+#VERSION: 1.17
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, headers
