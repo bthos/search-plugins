@@ -1,4 +1,4 @@
-#VERSION: 1.00
+#VERSION: 1.01
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, headers
@@ -84,6 +84,7 @@ class pctfenix(object):
         pctfenix.montar_torrent(self,html)
         
     def search(self, what, cat='all'):
+        what = what.replace("%20", " ")
         html = self.do_post(self.url+'/controllers/search-mini.php', what)
         parser = pctfenix.HTMLParser1()
         parser.feed(str(html))
