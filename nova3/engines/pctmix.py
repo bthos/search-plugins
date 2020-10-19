@@ -15,9 +15,9 @@ except ImportError:
     #python2
     from HTMLParser import HTMLParser
 
-class pctreload(object):
-    url = 'https://pctreload.com'
-    name = 'PCTReload'
+class pctmix(object):
+    url = 'https://pctmix.com'
+    name = 'PCTmix'
     size = ""
     count = 1
     list = [] 
@@ -27,7 +27,7 @@ class pctreload(object):
         def handle_starttag(self, tag, attrs):
             if tag == 'a' and self.indicador == 1:
                 Dict = dict(attrs)
-                pctreload.get_torrent2(self, Dict["href"])
+                pctmix.get_torrent2(self, Dict["href"])
                 self.indicador = 0
             elif tag == "span":
                 Dict = dict(attrs)
@@ -65,47 +65,47 @@ class pctreload(object):
             num = num - 1
             name = link.split("/")[num].split('.')[0]
         
-        link = pctreload.url + link[link.find("/"):]
+        link = pctmix.url + link[link.find("/"):]
         
         
         item = {}
         item['seeds'] = '-1'
         item['leech'] = '-1'
         item['name'] = name
-        item['size'] = pctreload.size
+        item['size'] = pctmix.size
         item['link'] = link
-        item['engine_url'] = pctreload.url
+        item['engine_url'] = pctmix.url
         item['desc_link'] = link
 
         #print(item)
         prettyPrinter(item)
-        pctreload.count = pctreload.count + 1
+        pctmix.count = pctmix.count + 1
         
     def get_torrent_core(self, link):
-        if link not in pctreload.list: 
-            pctreload.list.append(link) 
+        if link not in pctmix.list: 
+            pctmix.list.append(link) 
         else:
             return
         
-        html_virgen = pctreload.retrieve_url2(self, link)
+        html_virgen = pctmix.retrieve_url2(self, link)
         html_virgen = str(html_virgen)
         idx = html_virgen.find("window.location.href = \"//")
         html = html_virgen[idx:]
         html = html[:html.find("\";")]
         html = html[26:]
         if html == "":
-            parser = pctreload.HTMLParser1()
+            parser = pctmix.HTMLParser1()
             parser.feed(str(html_virgen))
         else:
-            pctreload.montar_torrent(self,html)
+            pctmix.montar_torrent(self,html)
         return
     
     def get_torrent2(self, link):
-        pctreload.get_torrent_core(self, link)
+        pctmix.get_torrent_core(self, link)
     
     def get_torrent(self, guid):
         link = self.url + "/" +  guid
-        pctreload.get_torrent_core(self, link)
+        pctmix.get_torrent_core(self, link)
     
     def search(self, what, cat='all'):
         self.pg = 1
@@ -121,14 +121,14 @@ class pctreload(object):
                 for k2, v2 in v.items():
                     for k3, v3 in v2.items():
                         if k3 == 'torrentSize':
-                            pctreload.size = v3
+                            pctmix.size = v3
                         if k3 == 'guid':
                             self.get_torrent(v3)
                             
                             
             self.pg = self.pg + 1
-        print(pctreload.count)
+        print(pctmix.count)
 
 if __name__ == "__main__":
-    m = pctreload()
+    m = pctmix()
     m.search('star wars')
