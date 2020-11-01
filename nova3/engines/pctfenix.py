@@ -1,4 +1,4 @@
-#VERSION: 1.1
+#VERSION: 1.5
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, headers
@@ -20,28 +20,42 @@ class pctfenix(object):
     name = 'PCTFenix'
     size = ""
     count = 1
-    list = [] 
+    list = []
+    parser1_list = []
+    parser2_list = []
+    parser2_list_2 = []
+    parser2_recording = False
+    parser3_list = []
     
     class HTMLParser1(HTMLParser):
         def handle_starttag(self, tag, attrs):
             if tag == 'a':
                 Dict = dict(attrs)
-                pctfenix.get_torrent_core(self, Dict["href"])
-                
+                pctfenix.parser1_list.append(Dict["href"])
+                                
     class HTMLParser2(HTMLParser):
         def handle_starttag(self, tag, attrs):
             if tag == 'div':
                 Dict = dict(attrs)
                 torrent_num = Dict["onclick"]
                 torrent_num = torrent_num[torrent_num.find("(")+1:torrent_num.find(")")]
-                pctfenix.modCap(self, torrent_num)
+                pctfenix.parser2_list.append(torrent_num)
+                pctfenix.parser2_recording = True
+        def handle_data(self, data):
+            if pctfenix.parser2_recording:
+                pctfenix.parser2_list_2.append(data)
+                pctfenix.parser2_recording = False
+        def handle_endtag(self, tag):
+            if tag == 'div' and pctfenix.parser2_recording:
+                pctfenix.parser2_recording = False
+ 
 
     class HTMLParser3(HTMLParser):
         def handle_starttag(self, tag, attrs):
             if tag == 'a':
                 Dict = dict(attrs)
-                if ".torrent" in Dict["href"]:
-                    pctfenix.montar_torrent(self, "https:"+Dict["href"])
+                if "data-ut" in Dict:
+                    pctfenix.parser3_list.append(Dict["data-ut"])
 
     def retrieve_url(self, url):
         req = urllib.request.Request(url, headers=headers)
@@ -65,8 +79,18 @@ class pctfenix(object):
             return the_page
         req2.close()
             
-    def montar_torrent(self, link):
-        name = link.split("/")[-1].split(".")[0]
+    def montar_torrent(self, link, title = ""):
+        if link not in pctfenix.list: 
+            pctfenix.list.append(link) 
+        else:
+            return
+
+        if not title:
+            name = link.split("/")[-1]
+            if name[len(name)-8:len(name)] == ".torrent":
+                name = name[:len(name)-8]
+        else:
+            name = title
         
         item = {}
         item['seeds'] = '-1'
@@ -80,12 +104,14 @@ class pctfenix(object):
         prettyPrinter(item)
         pctfenix.count = pctfenix.count + 1
 
-    def modCap(self, id):
+    def modCap(self, id, title):
         s = {'id': id }
         html = pctfenix.do_post(pctfenix, pctfenix.url+'/controllers/show.chapters.php', s)
-        parser = pctfenix.HTMLParser3()
-        parser.feed(str(html))
-
+        parser3 = pctfenix.HTMLParser3()
+        parser3.feed(str(html))
+        for k in pctfenix.parser3_list:
+            pctfenix.montar_torrent(self, "https:"+k, title)
+        pctfenix.parser3_list = []
 
     def loadDD(self, CNAME, CID, O):
         if O == "0":
@@ -98,8 +124,14 @@ class pctfenix(object):
         #CNAME = CNAME.replace(" ", "+")    
         s = {'_cname': CNAME, '_cid': CID ,'_cidr': CIDR ,'_o':O}
         html = pctfenix.do_post(pctfenix, pctfenix.url+'/controllers/load.chapters.type.php', s)
-        parser = pctfenix.HTMLParser2()
-        parser.feed(str(html))
+        parser2 = pctfenix.HTMLParser2()
+        parser2.feed(str(html))
+        for j,l in zip(pctfenix.parser2_list, pctfenix.parser2_list_2):
+            pctfenix.modCap(self, j, l)
+
+        pctfenix.parser2_list = []
+        pctfenix.parser2_list_2 = []
+        pctfenix.parser2_counter = 0
 
     
     def tratar_series(self, html_virgen):
@@ -137,13 +169,10 @@ class pctfenix(object):
             pctfenix.loadDD(self, CNAME, CID, O)
         
     def get_torrent_core(self, link):
-        if link not in pctfenix.list: 
-            pctfenix.list.append(link) 
-        else:
-            return
+        
         html_virgen = pctfenix.retrieve_url(self, pctfenix.url + link[1:])
         html_virgen = str(html_virgen)
-        texto = "class=\"ctn-download-torrent\"><a href=\""
+        texto = "id=\"btn-download-torrent\" data-ut=\""
         idx = html_virgen.find(texto)
         
         html = html_virgen[idx:]
@@ -151,6 +180,7 @@ class pctfenix(object):
             html = html[len(texto):]
             
             html = "https:" + html[:html.find("\"")]
+            
             pctfenix.montar_torrent(self, html)
         else:
             pctfenix.tratar_series(self, html_virgen)
@@ -158,12 +188,17 @@ class pctfenix(object):
     def search(self, what, cat='all'):
         what = what.replace("%20", " ")
         what = {'s': what}
-        html = self.do_post(self.url+'/controllers/search-mini.php', what)
-        parser = pctfenix.HTMLParser1()
-        parser.feed(str(html))
+        html2= self.do_post(self.url+'/controllers/search-mini.php', what)
+        parser1 = pctfenix.HTMLParser1()
+        parser1.feed(str(html2))
+        for i in pctfenix.parser1_list: 
+            if i not in pctfenix.list: 
+                pctfenix.list.append(i) 
+                pctfenix.get_torrent_core(self, i)
+            
                         
                             
         
 if __name__ == "__main__":
     m = pctfenix()
-    m.search('star wars')
+    m.search('fear the walking dead')
