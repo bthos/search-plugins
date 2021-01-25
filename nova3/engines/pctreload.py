@@ -16,7 +16,7 @@ except ImportError:
     from HTMLParser import HTMLParser
 
 class pctreload(object):
-    url = 'https://pctreload.com'
+    url = 'https://pctreload1.com'
     name = 'PCTReload'
     size = ""
     count = 1
