@@ -16,7 +16,7 @@ except ImportError:
     from HTMLParser import HTMLParser
 
 class pctmix(object):
-    url = 'https://pctmix.com'
+    url = 'https://pctmix1.com'
     name = 'PCTmix'
     size = ""
     count = 1
