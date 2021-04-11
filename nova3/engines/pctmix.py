@@ -1,4 +1,4 @@
-#VERSION: 1.22
+#VERSION: 1.25
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, headers
@@ -42,7 +42,6 @@ class pctmix(object):
             response.close()
             return dat
         except urllib.error.URLError as errno:
-            response.close()
             return ""
         return ""
 
@@ -60,13 +59,17 @@ class pctmix(object):
             
     def montar_torrent(self, link):
         num = -1
-        name = ""
-        while link.split("/")[num].split('.')[0] == "":
+        name = link
+        if (name[-1] == "/"):
+            name = name[:-1]
+        
+        print(name)
+        while name.find("/") >= 0 and name.split("/")[num].split('.')[0] != "":
+            name = name.split("/")[num].split('.')[0]
             num = num - 1
-            name = link.split("/")[num].split('.')[0]
+            print(name)
         
         link = pctmix.url + link[link.find("/"):]
-        
         
         item = {}
         item['seeds'] = '-1'
@@ -77,7 +80,7 @@ class pctmix(object):
         item['engine_url'] = pctmix.url
         item['desc_link'] = link
 
-        #print(item)
+        
         prettyPrinter(item)
         pctmix.count = pctmix.count + 1
         
@@ -131,4 +134,4 @@ class pctmix(object):
 
 if __name__ == "__main__":
     m = pctmix()
-    m.search('star wars')
+    m.search('falcon')
