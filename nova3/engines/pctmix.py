@@ -1,4 +1,4 @@
-#VERSION: 1.25
+#VERSION: 1.26
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, headers
@@ -16,7 +16,7 @@ except ImportError:
     from HTMLParser import HTMLParser
 
 class pctmix(object):
-    url = 'https://pctmix1.com'
+    url = 'https://pctmix.com'
     name = 'PCTmix'
     size = ""
     count = 1
