@@ -1,4 +1,4 @@
-#VERSION: 1.00
+#VERSION: 1.01
 #AUTHORS: Jose Lorenzo (josee.loren@gmail.com)
 
 from helpers import download_file, retrieve_url, headers
@@ -19,13 +19,13 @@ except ImportError:
 
 class subtorrents(object):
     name = 'SubTorrents'
-    url = 'https://www.subtorrents.la'
+    url = 'https://www.subtorrents.eu'
     
     class HTMLParser1(HTMLParser):
             enable = 0
             
             class HTMLParser2(HTMLParser):
-                url = 'https://www.subtorrents.la'
+                url = 'https://www.subtorrents.eu'
                 list = [] 
                 
                 def get_torrent(self, torrent):
@@ -38,6 +38,13 @@ class subtorrents(object):
                     name = torrent.split("/")[-1][0:idx]
                     link = torrent
                     
+                    domains = ["subtorrents.in", "subtorrents.la"]
+
+                    for domain in domains:
+                        if domain in link:
+                            link = link.replace(domain, "subtorrents.eu")
+                            break
+
                     item = {}
                     item['seeds'] = '-1'
                     item['leech'] = '-1'
